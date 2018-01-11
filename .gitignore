@@ -1,0 +1,14 @@
+# elm
+elm-stuff/
+repl-temp-*
+
+
+# node
+node_modules/
+build/
+.env
+
+
+# MacOS
+.DS_Store
+._*
