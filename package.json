@@ -6,8 +6,10 @@
   },
   "dependencies": {
     "css-loader": "^0.28.8",
+    "dotenv-webpack": "^1.5.4",
     "elm-webpack-loader": "^4.4.0",
     "file-loader": "^1.1.6",
+    "firebase": "^4.8.1",
     "rimraf": "^2.6.2",
     "style-loader": "^0.19.1",
     "webpack": "^3.10.0"

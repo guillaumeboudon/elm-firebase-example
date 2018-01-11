@@ -1,4 +1,5 @@
 var path = require('path')
+var DotEnv = require('dotenv-webpack')
 
 module.exports = {
   entry: './src/static/index.js',
@@ -27,5 +28,9 @@ module.exports = {
     ],
 
     noParse: /\.elm$/
-  }
+  },
+
+  plugins: [
+    new DotEnv()
+  ]
 }
