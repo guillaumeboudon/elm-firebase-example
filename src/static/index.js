@@ -15,3 +15,29 @@ firebase.initializeApp({
   storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID
 })
+
+// Firebase authentication
+let auth = firebase.auth()
+
+app.ports.authSignUp.subscribe(function(data) {
+  auth.createUserWithEmailAndPassword(data.email, data.password)
+})
+
+app.ports.authLogIn.subscribe(function(data) {
+  return auth.signInWithEmailAndPassword(data.email, data.password)
+})
+
+app.ports.authLogOut.subscribe(function(data) {
+  return auth.signOut()
+})
+
+auth.onAuthStateChanged(function (user) {
+  if (user) {
+    app.ports.authLoggedIn.send({
+      email: user.email,
+      uid: user.uid
+    })
+  } else {
+    app.ports.authLoggedOut.send("")
+  }
+})
