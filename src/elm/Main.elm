@@ -43,18 +43,14 @@ subscriptions model =
 -- UPDATE
 
 
-authUpdate : Auth.Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-authUpdate authMsg ( model, cmdMsg ) =
+authUpdate : Auth.Msg -> Model -> ( Model, Cmd Msg )
+authUpdate authMsg model =
     let
         ( newAuth, authCmdMsg ) =
             Auth.update authMsg model.auth
     in
-        ( model
-            |> setAuth newAuth
-        , Cmd.batch
-            [ cmdMsg
-            , Cmd.map AuthMsg authCmdMsg
-            ]
+        ( setAuth newAuth model
+        , Cmd.map AuthMsg authCmdMsg
         )
 
 
@@ -65,9 +61,7 @@ update msg model =
             model ! []
 
         AuthMsg authMsg ->
-            model
-                ! []
-                |> authUpdate authMsg
+            authUpdate authMsg model
 
 
 
