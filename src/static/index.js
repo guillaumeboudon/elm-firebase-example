@@ -46,7 +46,7 @@ auth.onAuthStateChanged(function (user) {
 // Firebase database
 let database = firebase.database()
 
-app.ports.databaseFetchDatabase.subscribe(function(uid) {
+app.ports.databaseFetchData.subscribe(function(uid) {
   database.ref('/users/' + uid).once('value')
     .then(function(snapshot) {
       var receivedData = snapshot.val() || "empty"

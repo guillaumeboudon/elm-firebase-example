@@ -159,8 +159,8 @@ update authMsg auth =
 authUserDecoder : JD.Decoder AuthUser
 authUserDecoder =
     JD.succeed AuthUser
-        |: (JD.field "email" JD.string)
         |: (JD.field "uid" JD.string)
+        |: (JD.field "email" JD.string)
 
 
 decodeAuthUser : JD.Value -> Result String AuthUser
