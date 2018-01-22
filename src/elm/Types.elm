@@ -1,6 +1,7 @@
 module Types exposing (..)
 
 import Modules.Auth as Auth
+import Modules.Database as Database
 
 
 -- MODEL
@@ -8,7 +9,9 @@ import Modules.Auth as Auth
 
 
 type alias Model =
-    { auth : Auth.Auth }
+    { auth : Auth.Auth
+    , database : Maybe Database.Database
+    }
 
 
 
@@ -17,7 +20,9 @@ type alias Model =
 
 initialModel : Model
 initialModel =
-    { auth = Auth.initialAuth }
+    { auth = Auth.initialAuth
+    , database = Nothing
+    }
 
 
 
@@ -29,6 +34,11 @@ setAuth auth model =
     { model | auth = auth }
 
 
+setDatabase : Maybe Database.Database -> Model -> Model
+setDatabase maybeDatabase model =
+    { model | database = maybeDatabase }
+
+
 
 -- UPDATE
 
@@ -36,3 +46,4 @@ setAuth auth model =
 type Msg
     = NoOp
     | AuthMsg Auth.Msg
+    | DatabaseMsg Database.Msg

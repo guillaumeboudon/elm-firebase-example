@@ -41,3 +41,16 @@ auth.onAuthStateChanged(function (user) {
     app.ports.authLoggedOut.send("")
   }
 })
+
+
+// Firebase database
+let database = firebase.database()
+
+app.ports.databaseFetchDatabase.subscribe(function(uid) {
+  database.ref('/users/' + uid).once('value')
+    .then(function(snapshot) {
+      var receivedData = snapshot.val() || "empty"
+      console.log(receivedData)
+      app.ports.databaseReceiveData.send(receivedData)
+    })
+})

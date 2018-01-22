@@ -1,6 +1,7 @@
 port module Modules.Auth exposing (..)
 
 import Json.Decode as JD
+import Json.Decode.Extra exposing ((|:))
 
 
 -- MODEL
@@ -155,14 +156,13 @@ update authMsg auth =
 -- DECODERS
 
 
-decodeAuthUser : JD.Value -> Maybe AuthUser
+authUserDecoder : JD.Decoder AuthUser
+authUserDecoder =
+    JD.succeed AuthUser
+        |: (JD.field "email" JD.string)
+        |: (JD.field "uid" JD.string)
+
+
+decodeAuthUser : JD.Value -> Result String AuthUser
 decodeAuthUser value =
-    let
-        valueDecoder =
-            JD.map2 AuthUser
-                (JD.field "email" JD.string)
-                (JD.field "uid" JD.string)
-    in
-        value
-            |> JD.decodeValue valueDecoder
-            |> Result.toMaybe
+    JD.decodeValue authUserDecoder value

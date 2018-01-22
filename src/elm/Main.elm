@@ -5,6 +5,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Modules.Auth as Auth
+import Modules.Database as Database
 import Types exposing (..)
 
 
@@ -23,12 +24,22 @@ init =
 
 decodeAuthLoggedIn : JD.Value -> Msg
 decodeAuthLoggedIn value =
-    case Auth.decodeAuthUser value of
-        Nothing ->
+    case value |> Auth.decodeAuthUser of
+        Err _ ->
             NoOp
 
-        Just user ->
+        Ok user ->
             AuthMsg (Auth.LoggedIn user)
+
+
+decodeDatabaseReceiveData : JD.Value -> Msg
+decodeDatabaseReceiveData value =
+    case value |> Database.decodeDatabase of
+        Err _ ->
+            NoOp
+
+        Ok database ->
+            DatabaseMsg (Database.ReceiveData database)
 
 
 subscriptions : Model -> Sub Msg
@@ -36,6 +47,7 @@ subscriptions model =
     Sub.batch
         [ Auth.authLoggedIn decodeAuthLoggedIn
         , Auth.authLoggedOut (always (AuthMsg Auth.LoggedOut))
+        , Database.databaseReceiveData decodeDatabaseReceiveData
         ]
 
 
@@ -49,9 +61,31 @@ authUpdate authMsg model =
         ( newAuth, authCmdMsg ) =
             Auth.update authMsg model.auth
     in
-        ( setAuth newAuth model
-        , Cmd.map AuthMsg authCmdMsg
-        )
+        case authMsg of
+            Auth.LoggedIn authUser ->
+                ( setAuth newAuth model
+                , Cmd.batch
+                    [ Cmd.map AuthMsg authCmdMsg
+                    , Database.databaseFetchData authUser.uid
+                    ]
+                )
+
+            Auth.LoggedOut ->
+                ( model
+                    |> setAuth newAuth
+                    |> setDatabase Nothing
+                , Cmd.map AuthMsg authCmdMsg
+                )
+
+            _ ->
+                ( setAuth newAuth model
+                , Cmd.map AuthMsg authCmdMsg
+                )
+
+
+databaseUpdate : Database.Msg -> Model -> ( Model, Cmd Msg )
+databaseUpdate databaseMsg model =
+    model ! []
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -61,7 +95,11 @@ update msg model =
             model ! []
 
         AuthMsg authMsg ->
-            authUpdate authMsg model
+            model
+                |> authUpdate authMsg
+
+        DatabaseMsg databaseMsg ->
+            databaseUpdate databaseMsg model
 
 
 
