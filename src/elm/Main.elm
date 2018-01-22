@@ -1,12 +1,11 @@
 module Main exposing (..)
 
 import Json.Decode as JD
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html
 import Modules.Auth as Auth
 import Modules.Database as Database
 import Types exposing (..)
+import View exposing (..)
 
 
 -- INIT
@@ -85,7 +84,14 @@ authUpdate authMsg model =
 
 databaseUpdate : Database.Msg -> Model -> ( Model, Cmd Msg )
 databaseUpdate databaseMsg model =
-    model ! []
+    let
+        newMaybeDatabase =
+            (Database.update databaseMsg model.database)
+    in
+        ( model
+            |> setDatabase newMaybeDatabase
+        , Cmd.none
+        )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -95,34 +101,10 @@ update msg model =
             model ! []
 
         AuthMsg authMsg ->
-            model
-                |> authUpdate authMsg
+            model |> authUpdate authMsg
 
         DatabaseMsg databaseMsg ->
-            databaseUpdate databaseMsg model
-
-
-
--- VIEW
-
-
-view : Model -> Html.Html Msg
-view model =
-    case model.auth of
-        Auth.NotAuthenticated authDetails ->
-            div []
-                [ h1 [] [ text "Not Authenticated" ]
-                , input [ type_ "text", onInput (AuthMsg << Auth.InputEmail) ] []
-                , input [ type_ "password", onInput (AuthMsg << Auth.InputPassword) ] []
-                , button [ onClick (AuthMsg Auth.SignUp) ] [ text "Signup" ]
-                , button [ onClick (AuthMsg Auth.LogIn) ] [ text "Login" ]
-                ]
-
-        Auth.Authenticated authUser ->
-            div []
-                [ h1 [] [ text "Authenticated" ]
-                , button [ onClick (AuthMsg Auth.LogOut) ] [ text "Logout" ]
-                ]
+            model |> databaseUpdate databaseMsg
 
 
 

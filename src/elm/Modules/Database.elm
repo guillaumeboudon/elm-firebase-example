@@ -72,14 +72,14 @@ type Msg
     | ReceiveData Database
 
 
-update : Msg -> Database -> Database
+update : Msg -> Maybe Database -> Maybe Database
 update databaseMsg database =
     case databaseMsg of
         FetchData ->
             database
 
-        ReceiveData database ->
-            database
+        ReceiveData newDatabase ->
+            Just newDatabase
 
 
 
