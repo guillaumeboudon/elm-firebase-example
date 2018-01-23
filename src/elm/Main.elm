@@ -35,7 +35,7 @@ decodeDatabaseReceiveData : JD.Value -> Msg
 decodeDatabaseReceiveData value =
     case value |> Database.decodeDatabase of
         Err _ ->
-            NoOp
+            SetActiveStatus
 
         Ok database ->
             DatabaseMsg (Database.ReceiveData database)
@@ -62,7 +62,9 @@ authUpdate authMsg model =
     in
         case authMsg of
             Auth.LoggedIn authUser ->
-                ( setAuth newAuth model
+                ( model
+                    |> setAuth newAuth
+                    |> setStatus Loading
                 , Cmd.batch
                     [ Cmd.map AuthMsg authCmdMsg
                     , Database.databaseFetchData authUser.uid
@@ -73,6 +75,7 @@ authUpdate authMsg model =
                 ( model
                     |> setAuth newAuth
                     |> setDatabase Nothing
+                    |> setStatus Active
                 , Cmd.map AuthMsg authCmdMsg
                 )
 
@@ -105,6 +108,11 @@ update msg model =
 
         DatabaseMsg databaseMsg ->
             model |> databaseUpdate databaseMsg
+
+        SetActiveStatus ->
+            ( model |> setStatus Active
+            , Cmd.none
+            )
 
 
 

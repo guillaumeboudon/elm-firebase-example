@@ -68,16 +68,12 @@ port databaseReceiveData : (JD.Value -> msg) -> Sub msg
 
 
 type Msg
-    = FetchData
-    | ReceiveData Database
+    = ReceiveData Database
 
 
 update : Msg -> Maybe Database -> Maybe Database
 update databaseMsg database =
     case databaseMsg of
-        FetchData ->
-            database
-
         ReceiveData newDatabase ->
             Just newDatabase
 

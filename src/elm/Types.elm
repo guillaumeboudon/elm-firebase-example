@@ -8,9 +8,15 @@ import Modules.Database as Database
 {- Structure -}
 
 
+type Status
+    = Loading
+    | Active
+
+
 type alias Model =
     { auth : Auth.Auth
     , database : Maybe Database.Database
+    , status : Status
     }
 
 
@@ -22,6 +28,7 @@ initialModel : Model
 initialModel =
     { auth = Auth.initialAuth
     , database = Nothing
+    , status = Active
     }
 
 
@@ -39,6 +46,11 @@ setDatabase maybeDatabase model =
     { model | database = maybeDatabase }
 
 
+setStatus : Status -> Model -> Model
+setStatus status model =
+    { model | status = status }
+
+
 
 -- UPDATE
 
@@ -47,3 +59,4 @@ type Msg
     = NoOp
     | AuthMsg Auth.Msg
     | DatabaseMsg Database.Msg
+    | SetActiveStatus

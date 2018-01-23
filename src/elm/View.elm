@@ -20,17 +20,17 @@ view model =
                 ]
 
         Auth.Authenticated authUser ->
-            case model.database of
-                Nothing ->
+            case model.status of
+                Loading ->
                     div []
                         [ h1 [] [ text "Authenticated" ]
-                        , h2 [] [ text "Signed up user" ]
                         , button [ onClick (AuthMsg Auth.LogOut) ] [ text "Logout" ]
+                        , p [] [ text "Waiting" ]
                         ]
 
-                Just database ->
+                Active ->
                     div []
                         [ h1 [] [ text "Authenticated" ]
-                        , h2 [] [ text "Logged in user" ]
                         , button [ onClick (AuthMsg Auth.LogOut) ] [ text "Logout" ]
+                        , p [] [ text "Data fetched" ]
                         ]
