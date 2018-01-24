@@ -8,15 +8,17 @@ import Modules.Database as Database
 {- Structure -}
 
 
-type Status
-    = Loading
-    | Active
+type Page
+    = WaitingPage
+    | AuthPage
+    | UserPage
+    | TodoPage
 
 
 type alias Model =
     { auth : Auth.Auth
     , database : Maybe Database.Database
-    , status : Status
+    , page : Page
     }
 
 
@@ -28,7 +30,7 @@ initialModel : Model
 initialModel =
     { auth = Auth.initialAuth
     , database = Nothing
-    , status = Active
+    , page = AuthPage
     }
 
 
@@ -46,9 +48,9 @@ setDatabase maybeDatabase model =
     { model | database = maybeDatabase }
 
 
-setStatus : Status -> Model -> Model
-setStatus status model =
-    { model | status = status }
+setPage : Page -> Model -> Model
+setPage page model =
+    { model | page = page }
 
 
 
@@ -59,4 +61,4 @@ type Msg
     = NoOp
     | AuthMsg Auth.Msg
     | DatabaseMsg Database.Msg
-    | SetActiveStatus
+    | SetPage Page

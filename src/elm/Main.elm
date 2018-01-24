@@ -35,7 +35,7 @@ decodeDatabaseReceiveData : JD.Value -> Msg
 decodeDatabaseReceiveData value =
     case value |> Database.decodeDatabase of
         Err _ ->
-            SetActiveStatus
+            SetPage UserPage
 
         Ok database ->
             DatabaseMsg (Database.ReceiveData database)
@@ -64,7 +64,7 @@ authUpdate authMsg model =
             Auth.LoggedIn authUser ->
                 ( model
                     |> setAuth newAuth
-                    |> setStatus Loading
+                    |> setPage WaitingPage
                 , Cmd.batch
                     [ Cmd.map AuthMsg authCmdMsg
                     , Database.databaseFetchData authUser.uid
@@ -75,7 +75,7 @@ authUpdate authMsg model =
                 ( model
                     |> setAuth newAuth
                     |> setDatabase Nothing
-                    |> setStatus Active
+                    |> setPage AuthPage
                 , Cmd.map AuthMsg authCmdMsg
                 )
 
@@ -109,8 +109,8 @@ update msg model =
         DatabaseMsg databaseMsg ->
             model |> databaseUpdate databaseMsg
 
-        SetActiveStatus ->
-            ( model |> setStatus Active
+        SetPage page ->
+            ( model |> setPage page
             , Cmd.none
             )
 
