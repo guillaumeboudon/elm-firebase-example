@@ -1,4 +1,5 @@
 require('./index.html')
+require('../assets/styles/index.scss')
 
 // elm application
 var Elm = require('../elm/Main.elm')
