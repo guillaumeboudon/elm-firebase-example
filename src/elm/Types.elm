@@ -2,6 +2,7 @@ module Types exposing (..)
 
 import Modules.Auth as Auth
 import Modules.Database as Database
+import Modules.Pages as Pages
 
 
 -- MODEL
@@ -11,7 +12,7 @@ import Modules.Database as Database
 type Page
     = WaitingPage
     | AuthPage
-    | UserPage
+    | UserCreatePage Database.User
     | TodoPage
 
 
@@ -62,3 +63,4 @@ type Msg
     | AuthMsg Auth.Msg
     | DatabaseMsg Database.Msg
     | SetPage Page
+    | PagesMsg Pages.Msg

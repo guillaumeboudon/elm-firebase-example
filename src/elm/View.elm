@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Types exposing (..)
 import Modules.Auth as Auth
+import Modules.Pages as Pages
 
 
 -- activeBodyView : Auth.AuthUser -> Model -> Html Msg
@@ -65,19 +66,22 @@ contentView model =
 
         AuthPage ->
             div []
-                [ input [ type_ "text", onInput (AuthMsg << Auth.InputEmail) ] []
+                [ h2 [] [ text "Authentication" ]
+                , input [ type_ "text", onInput (AuthMsg << Auth.InputEmail) ] []
                 , input [ type_ "password", onInput (AuthMsg << Auth.InputPassword) ] []
                 , button [ onClick (AuthMsg Auth.SignUp) ] [ text "Signup" ]
                 , button [ onClick (AuthMsg Auth.LogIn) ] [ text "Login" ]
                 ]
 
-        UserPage ->
+        UserCreatePage user ->
             div []
-                [ h1 [] [ text "User" ]
+                [ h2 [] [ text "User" ]
+                , input [ type_ "text", onInput (PagesMsg << Pages.InputUserFirstName), placeholder "Prénom" ] []
+                , input [ type_ "text", onInput (PagesMsg << Pages.InputUserLastName), placeholder "Nom" ] []
                 ]
 
         TodoPage ->
-            div [] [ h1 [] [ text "Todo" ] ]
+            div [] [ h2 [] [ text "Todo" ] ]
 
 
 headerView : Model -> Html Msg
@@ -88,11 +92,12 @@ headerView model =
                 [ style
                     [ ( "background-color", "#AAA" )
                     , ( "display", "flex" )
+                    , ( "flex-direction", "row" )
                     ]
                 ]
                 [ div
                     [ style [ ( "flex", "1" ) ] ]
-                    [ div [ style [ ( "flex", "1" ) ] ] [ h1 [] [ text "Not authenticated" ] ] ]
+                    [ h1 [] [ text "Not authenticated" ] ]
                 ]
 
         Auth.Authenticated _ ->
@@ -100,13 +105,13 @@ headerView model =
                 [ style
                     [ ( "background-color", "#AAA" )
                     , ( "display", "flex" )
+                    , ( "flex-direction", "row" )
                     ]
                 ]
                 [ div [ style [ ( "flex", "1" ) ] ]
-                    [ h1 [] [ text "Authenticated" ]
-                    , div []
-                        [ button [ onClick (AuthMsg Auth.LogOut) ] [ text "Logout" ] ]
-                    ]
+                    [ h1 [] [ text "Authenticated" ] ]
+                , div []
+                    [ button [ onClick (AuthMsg Auth.LogOut) ] [ text "Logout" ] ]
                 ]
 
 

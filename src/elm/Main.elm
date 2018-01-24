@@ -4,6 +4,7 @@ import Json.Decode as JD
 import Html
 import Modules.Auth as Auth
 import Modules.Database as Database
+import Modules.Pages as Pages
 import Types exposing (..)
 import View exposing (..)
 
@@ -35,7 +36,7 @@ decodeDatabaseReceiveData : JD.Value -> Msg
 decodeDatabaseReceiveData value =
     case value |> Database.decodeDatabase of
         Err _ ->
-            SetPage UserPage
+            SetPage (UserCreatePage Database.emptyUser)
 
         Ok database ->
             DatabaseMsg (Database.ReceiveData database)
@@ -97,6 +98,13 @@ databaseUpdate databaseMsg model =
         )
 
 
+pagesUpdate : Pages.Msg -> Model -> ( Model, Cmd Msg )
+pagesUpdate pagesMsg model =
+    ( model |> setPage (Pages.update pagesMsg model.page)
+    , Cmd.none
+    )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -113,6 +121,9 @@ update msg model =
             ( model |> setPage page
             , Cmd.none
             )
+
+        PagesMsg pagesMsg ->
+            model |> pagesUpdate pagesMsg
 
 
 

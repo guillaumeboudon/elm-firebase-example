@@ -40,6 +40,15 @@ type alias Database =
 
 
 
+{- Initializers -}
+
+
+emptyUser : User
+emptyUser =
+    User "" ""
+
+
+
 {- Setters -}
 
 
