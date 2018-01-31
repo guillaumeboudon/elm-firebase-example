@@ -9,17 +9,10 @@ import Modules.Pages as Pages
 {- Structure -}
 
 
-type Page
-    = WaitingPage
-    | AuthPage
-    | UserCreatePage Database.User
-    | TodoPage
-
-
 type alias Model =
     { auth : Auth.Auth
     , database : Maybe Database.Database
-    , page : Page
+    , page : Pages.Page
     }
 
 
@@ -31,7 +24,7 @@ initialModel : Model
 initialModel =
     { auth = Auth.initialAuth
     , database = Nothing
-    , page = AuthPage
+    , page = Pages.AuthPage
     }
 
 
@@ -49,7 +42,7 @@ setDatabase maybeDatabase model =
     { model | database = maybeDatabase }
 
 
-setPage : Page -> Model -> Model
+setPage : Pages.Page -> Model -> Model
 setPage page model =
     { model | page = page }
 
@@ -62,5 +55,5 @@ type Msg
     = NoOp
     | AuthMsg Auth.Msg
     | DatabaseMsg Database.Msg
-    | SetPage Page
+    | SetPage Pages.Page
     | PagesMsg Pages.Msg

@@ -61,10 +61,10 @@ import Modules.Pages as Pages
 contentView : Model -> Html Msg
 contentView model =
     case model.page of
-        WaitingPage ->
+        Pages.WaitingPage ->
             div [] [ text "..." ]
 
-        AuthPage ->
+        Pages.AuthPage ->
             div []
                 [ h2 [] [ text "Authentication" ]
                 , input [ type_ "text", onInput (AuthMsg << Auth.InputEmail) ] []
@@ -73,46 +73,40 @@ contentView model =
                 , button [ onClick (AuthMsg Auth.LogIn) ] [ text "Login" ]
                 ]
 
-        UserCreatePage user ->
+        Pages.UserCreatePage user ->
             div []
                 [ h2 [] [ text "User" ]
                 , input [ type_ "text", onInput (PagesMsg << Pages.InputUserFirstName), placeholder "Prénom" ] []
                 , input [ type_ "text", onInput (PagesMsg << Pages.InputUserLastName), placeholder "Nom" ] []
                 ]
 
-        TodoPage ->
+        Pages.TodoPage ->
             div [] [ h2 [] [ text "Todo" ] ]
 
 
 headerView : Model -> Html Msg
 headerView model =
-    case model.auth of
-        Auth.NotAuthenticated _ ->
-            div
-                [ style
-                    [ ( "background-color", "#AAA" )
-                    , ( "display", "flex" )
-                    , ( "flex-direction", "row" )
-                    ]
-                ]
+    div
+        [ style
+            [ ( "background-color", "#AAA" )
+            , ( "display", "flex" )
+            , ( "flex-direction", "row" )
+            ]
+        ]
+        (case model.auth of
+            Auth.NotAuthenticated _ ->
                 [ div
                     [ style [ ( "flex", "1" ) ] ]
                     [ h1 [] [ text "Not authenticated" ] ]
                 ]
 
-        Auth.Authenticated _ ->
-            div
-                [ style
-                    [ ( "background-color", "#AAA" )
-                    , ( "display", "flex" )
-                    , ( "flex-direction", "row" )
-                    ]
-                ]
+            Auth.Authenticated _ ->
                 [ div [ style [ ( "flex", "1" ) ] ]
                     [ h1 [] [ text "Authenticated" ] ]
                 , div []
                     [ button [ onClick (AuthMsg Auth.LogOut) ] [ text "Logout" ] ]
                 ]
+        )
 
 
 view : Model -> Html.Html Msg
