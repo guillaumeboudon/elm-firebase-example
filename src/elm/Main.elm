@@ -100,9 +100,33 @@ databaseUpdate databaseMsg model =
 
 pagesUpdate : Pages.Msg -> Model -> ( Model, Cmd Msg )
 pagesUpdate pagesMsg model =
-    ( model |> setPage (Pages.update pagesMsg model.page)
-    , Cmd.none
-    )
+    let
+        newPage =
+            Pages.update pagesMsg model.page
+
+        cmdMsg =
+            case model.page of
+                Pages.UserCreatePage user ->
+                    case pagesMsg of
+                        Pages.CreateUser ->
+                            case model.auth of
+                                Auth.NotAuthenticated _ ->
+                                    Cmd.none
+
+                                Auth.Authenticated authUser ->
+                                    user
+                                        |> Database.createUserData authUser.uid
+                                        |> Database.databaseWriteData
+
+                        _ ->
+                            Cmd.none
+
+                _ ->
+                    Cmd.none
+    in
+        ( model |> setPage newPage
+        , cmdMsg
+        )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

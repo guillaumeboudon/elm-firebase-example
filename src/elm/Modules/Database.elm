@@ -2,18 +2,11 @@ port module Modules.Database exposing (..)
 
 import Json.Decode as JD
 import Json.Decode.Extra exposing ((|:))
+import Json.Encode as JE
 
 
 -- MODEL
 {- Structure -}
-
-
-type alias Persisted a =
-    { id : Int
-    , createdAt : String
-    , updatedAt : String
-    , data : a
-    }
 
 
 type alias User =
@@ -34,8 +27,8 @@ type alias Todo =
 
 
 type alias Database =
-    { user : Persisted User
-    , todos : List (Persisted Todo)
+    { user : User
+    , todos : List Todo
     }
 
 
@@ -57,16 +50,36 @@ setUser user database =
     { database | user = user }
 
 
-setTodos : List (Persisted Todo) -> { a | todos : List (Persisted Todo) } -> { a | todos : List (Persisted Todo) }
+setTodos : List Todo -> { a | todos : List Todo } -> { a | todos : List Todo }
 setTodos todos database =
     { database | todos = todos }
+
+
+
+-- FUNCTIONS
+
+
+createUserData : String -> User -> OutcomingData
+createUserData uid user =
+    { ref = uid ++ "/user"
+    , data = user |> userEncoder
+    }
 
 
 
 -- PORTS
 
 
+type alias OutcomingData =
+    { ref : String
+    , data : JE.Value
+    }
+
+
 port databaseFetchData : String -> Cmd msg
+
+
+port databaseWriteData : OutcomingData -> Cmd msg
 
 
 port databaseReceiveData : (JD.Value -> msg) -> Sub msg
@@ -88,6 +101,18 @@ update databaseMsg database =
 
 
 
+-- ENCODERS
+
+
+userEncoder : User -> JE.Value
+userEncoder user =
+    JE.object
+        [ ( "firstName", JE.string user.firstName )
+        , ( "lastName", JE.string user.lastName )
+        ]
+
+
+
 -- DECODERS
 
 
@@ -96,15 +121,6 @@ userDecoder =
     JD.succeed User
         |: (JD.field "firstName" JD.string)
         |: (JD.field "lastName" JD.string)
-
-
-persistedUserDecoder : JD.Decoder (Persisted User)
-persistedUserDecoder =
-    JD.succeed Persisted
-        |: (JD.field "id" JD.int)
-        |: (JD.field "createdAt" JD.string)
-        |: (JD.field "updatedAt" JD.string)
-        |: (JD.field "data" userDecoder)
 
 
 todoStateDecoder : String -> JD.Decoder TodoState
@@ -127,25 +143,16 @@ todoDecoder =
         |: (JD.field "states" (JD.andThen todoStateDecoder JD.string))
 
 
-persistedTodoDecoder : JD.Decoder (Persisted Todo)
-persistedTodoDecoder =
-    JD.succeed Persisted
-        |: (JD.field "id" JD.int)
-        |: (JD.field "createdAt" JD.string)
-        |: (JD.field "updatedAt" JD.string)
-        |: (JD.field "data" todoDecoder)
-
-
-persistedTodosDecoder : JD.Decoder (List (Persisted Todo))
-persistedTodosDecoder =
-    JD.list persistedTodoDecoder
+todosDecoder : JD.Decoder (List Todo)
+todosDecoder =
+    JD.list todoDecoder
 
 
 databaseDecoder : JD.Decoder Database
 databaseDecoder =
     JD.succeed Database
-        |: (JD.field "user" persistedUserDecoder)
-        |: (JD.field "todos" persistedTodosDecoder)
+        |: (JD.field "user" userDecoder)
+        |: (JD.field "todos" todosDecoder)
 
 
 decodeDatabase : JD.Value -> Result String Database

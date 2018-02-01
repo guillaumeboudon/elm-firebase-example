@@ -78,6 +78,7 @@ contentView model =
                 [ h2 [] [ text "User" ]
                 , input [ type_ "text", onInput (PagesMsg << Pages.InputUserFirstName), placeholder "Prénom" ] []
                 , input [ type_ "text", onInput (PagesMsg << Pages.InputUserLastName), placeholder "Nom" ] []
+                , button [ onClick (PagesMsg Pages.CreateUser) ] [ text "Create user" ]
                 ]
 
         Pages.TodoPage ->

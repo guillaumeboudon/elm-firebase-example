@@ -48,9 +48,16 @@ auth.onAuthStateChanged(function (user) {
 let database = firebase.database()
 
 app.ports.databaseFetchData.subscribe(function(uid) {
-  database.ref('/users/' + uid).once('value')
+  database.ref(uid).once('value')
     .then(function(snapshot) {
       var receivedData = snapshot.val() || "empty"
       app.ports.databaseReceiveData.send(receivedData)
+    })
+})
+
+app.ports.databaseWriteData.subscribe(function(container){
+  database.ref(container.ref).set(container.data)
+    .then(function() {
+      app.ports.databaseDataWritten.send("user:created")
     })
 })
