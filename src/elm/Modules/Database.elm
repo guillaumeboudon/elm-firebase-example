@@ -56,7 +56,40 @@ setTodos todos database =
 
 
 
--- FUNCTIONS
+-- PORTS
+
+
+port databaseFetchData : DataContainer -> Cmd msg
+
+
+port databaseReceiveData : (JD.Value -> msg) -> Sub msg
+
+
+port databaseSaveData : DataContainer -> Cmd msg
+
+
+
+-- UPDATE
+
+
+type Msg
+    = ReceiveUser User
+
+
+update : Msg -> Maybe Database -> Maybe Database
+update databaseMsg maybeDatabase =
+    case databaseMsg of
+        ReceiveUser user ->
+            case maybeDatabase of
+                Nothing ->
+                    Just (Database user [])
+
+                Just database ->
+                    Just (database |> setUser user)
+
+
+
+-- DATA TREATMENT FUNCTIONS
 
 
 type DataTarget
@@ -117,39 +150,6 @@ extractDataAndTarget value =
                         data
                   )
                 )
-
-
-
--- PORTS
-
-
-port databaseFetchData : DataContainer -> Cmd msg
-
-
-port databaseReceiveData : (JD.Value -> msg) -> Sub msg
-
-
-port databaseSaveData : DataContainer -> Cmd msg
-
-
-
--- UPDATE
-
-
-type Msg
-    = ReceiveUser User
-
-
-update : Msg -> Maybe Database -> Maybe Database
-update databaseMsg maybeDatabase =
-    case databaseMsg of
-        ReceiveUser user ->
-            case maybeDatabase of
-                Nothing ->
-                    Just (Database user [])
-
-                Just database ->
-                    Just (database |> setUser user)
 
 
 
