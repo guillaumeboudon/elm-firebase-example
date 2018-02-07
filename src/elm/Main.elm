@@ -48,6 +48,14 @@ decodeDatabaseReceiveData value =
                         Ok user ->
                             DatabaseMsg (Database.ReceiveUser user)
 
+                Database.TodosTarget ->
+                    case data |> JD.decodeValue Database.todosDecoder of
+                        Err _ ->
+                            SetPage (Pages.TodoPage Nothing)
+
+                        Ok todos ->
+                            DatabaseMsg (Database.ReceiveTodos todos)
+
                 _ ->
                     NoOp
 
@@ -111,6 +119,11 @@ databaseUpdate databaseMsg model =
 
                     _ ->
                         Cmd.none
+                )
+
+            Database.ReceiveTodos todos ->
+                ( model |> setDatabase newMaybeDatabase
+                , Cmd.none
                 )
 
             Database.SaveUser user ->

@@ -77,7 +77,7 @@ setUser user database =
     { database | user = user }
 
 
-setTodos : List Todo -> { a | todos : List Todo } -> { a | todos : List Todo }
+setTodos : Todos -> { a | todos : Todos } -> { a | todos : Todos }
 setTodos todos database =
     { database | todos = todos }
 
@@ -119,6 +119,7 @@ port databaseSaveData : DataContainer -> Cmd msg
 
 type Msg
     = ReceiveUser User
+    | ReceiveTodos Todos
     | SaveUser User
     | SaveTodo Todo
 
@@ -133,6 +134,14 @@ update databaseMsg maybeDatabase =
 
                 Just database ->
                     Just (database |> setUser user)
+
+        ReceiveTodos todos ->
+            case maybeDatabase of
+                Nothing ->
+                    Nothing
+
+                Just database ->
+                    Just (database |> setTodos todos)
 
         SaveUser user ->
             case maybeDatabase of
@@ -279,7 +288,7 @@ todoDecoder =
     JD.succeed Todo
         |: (JD.field "id" JD.int)
         |: (JD.field "title" JD.string)
-        |: (JD.field "states" (JD.andThen todoStateDecoder JD.string))
+        |: (JD.field "state" (JD.andThen todoStateDecoder JD.string))
 
 
 todoListDecoder : JD.Decoder (List Todo)
