@@ -87,17 +87,27 @@ setTodoTitle todo title =
     { todo | title = title }
 
 
-addTodo : Todo -> Todos -> Todos
-addTodo todo todos =
-    { todos
-        | uid = todo.id + 1
-        , todos = todos.todos ++ [ todo ]
-    }
+saveTodo : Todo -> Todos -> Todos
+saveTodo todo todos =
+    let
+        updateTodo element =
+            if element.id == todo.id then
+                todo
+            else
+                element
+    in
+        if todo.id /= todos.uid then
+            { todos | todos = List.map updateTodo todos.todos }
+        else
+            { todos
+                | uid = todos.uid + 1
+                , todos = todos.todos ++ [ todo ]
+            }
 
 
-addTodoToTodos : Todo -> Database -> Database
-addTodoToTodos todo database =
-    { database | todos = database.todos |> addTodo todo }
+saveTodoToTodos : Todo -> Database -> Database
+saveTodoToTodos todo database =
+    { database | todos = database.todos |> saveTodo todo }
 
 
 
@@ -157,7 +167,7 @@ update databaseMsg maybeDatabase =
                     Nothing
 
                 Just database ->
-                    Just (database |> addTodoToTodos todo)
+                    Just (database |> saveTodoToTodos todo)
 
 
 

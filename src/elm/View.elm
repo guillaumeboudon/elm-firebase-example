@@ -27,17 +27,33 @@ todoPageView maybeCurrentTodo todos =
                 )
 
         todoPartial todo =
-            div []
+            div [ style [ ( "display", "flex" ), ( "flex-direction", "row" ) ] ]
                 (if currentTodo.id == todo.id then
-                    []
+                    [ input [ onInput (SetPage << Pages.TodoPage << Just << (Database.setTodoTitle currentTodo)), value currentTodo.title ] []
+                    , button [ onClick (DatabaseMsg (Database.SaveTodo currentTodo)) ] [ text "Save" ]
+                    ]
                  else
-                    [ div [] [ text todo.title ] ]
+                    [ div
+                        [ style
+                            [ ( "width", "150px" )
+                            , ( "overflow", "hidden" )
+                            , ( "white-space", "nowrap" )
+                            , ( "text-overflow", "ellipsis" )
+                            ]
+                        ]
+                        [ text todo.title ]
+                    , button [ onClick (SetPage (Pages.TodoPage (Just todo))) ] [ text "Edit" ]
+                    ]
                 )
     in
         div []
             [ h2 [] [ text "Todo" ]
             , newTodoPartial
-            , div [] (todos.todos |> List.map todoPartial)
+            , div []
+                (todos.todos
+                    |> List.reverse
+                    |> List.map todoPartial
+                )
             ]
 
 
