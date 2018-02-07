@@ -47,6 +47,18 @@ auth.onAuthStateChanged(function (user) {
 // Firebase database
 let database = firebase.database()
 
+app.ports.databaseFetchUser.subscribe(function(data) {
+  database.ref(data.uid + "/" + data.target).once('value')
+    .then(function(snapshot) {
+      var receivedData = snapshot.val() || "empty"
+      app.ports.databaseReceiveData.send({
+        uid: data.uid,
+        target: data.target,
+        data: receivedData
+      })
+    })
+})
+
 app.ports.databaseFetchData.subscribe(function(uid) {
   database.ref(uid).once('value')
     .then(function(snapshot) {
@@ -55,9 +67,10 @@ app.ports.databaseFetchData.subscribe(function(uid) {
     })
 })
 
-app.ports.databaseWriteData.subscribe(function(container){
+app.ports.databaseSaveData.subscribe(function(container){
   database.ref(container.ref).set(container.data)
     .then(function() {
-      app.ports.databaseDataWritten.send("user:created")
+      console.log("OK")
+      // app.ports.databaseDataWritten.send("user:created")
     })
 })

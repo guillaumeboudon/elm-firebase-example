@@ -34,12 +34,22 @@ decodeAuthLoggedIn value =
 
 decodeDatabaseReceiveData : JD.Value -> Msg
 decodeDatabaseReceiveData value =
-    case value |> Database.decodeDatabase of
-        Err _ ->
+    case value |> Database.extractDataAndTarget of
+        Nothing ->
             SetPage (Pages.UserCreatePage Database.emptyUser)
 
-        Ok database ->
-            DatabaseMsg (Database.ReceiveData database)
+        Just ( dataTarget, data ) ->
+            case dataTarget of
+                Database.UserTarget ->
+                    case data |> JD.decodeValue Database.userDecoder of
+                        Err _ ->
+                            SetPage (Pages.UserCreatePage Database.emptyUser)
+
+                        Ok user ->
+                            DatabaseMsg (Database.ReceiveUser user)
+
+                _ ->
+                    NoOp
 
 
 subscriptions : Model -> Sub Msg
@@ -68,7 +78,7 @@ authUpdate authMsg model =
                     |> setPage Pages.WaitingPage
                 , Cmd.batch
                     [ Cmd.map AuthMsg authCmdMsg
-                    , Database.databaseFetchData authUser.uid
+                    , Database.databaseFetchUser authUser.uid
                     ]
                 )
 
@@ -92,10 +102,13 @@ databaseUpdate databaseMsg model =
         newMaybeDatabase =
             (Database.update databaseMsg model.database)
     in
-        ( model
-            |> setDatabase newMaybeDatabase
-        , Cmd.none
-        )
+        case databaseMsg of
+            Database.ReceiveUser user ->
+                ( model
+                    |> setDatabase newMaybeDatabase
+                    |> setPage Pages.WaitingPage
+                , Cmd.none
+                )
 
 
 pagesUpdate : Pages.Msg -> Model -> ( Model, Cmd Msg )
@@ -114,9 +127,7 @@ pagesUpdate pagesMsg model =
                                     Cmd.none
 
                                 Auth.Authenticated authUser ->
-                                    user
-                                        |> Database.createUserData authUser.uid
-                                        |> Database.databaseWriteData
+                                    user |> Database.databaseSaveUser authUser.uid
 
                         _ ->
                             Cmd.none

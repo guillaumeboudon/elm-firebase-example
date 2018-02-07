@@ -59,30 +59,77 @@ setTodos todos database =
 -- FUNCTIONS
 
 
-createUserData : String -> User -> OutcomingData
-createUserData uid user =
-    { ref = uid ++ "/user"
-    , data = user |> userEncoder
+type DataTarget
+    = UserTarget
+    | TodosTarget
+    | WrongTarget
+
+
+decodeDataTarget : String -> DataTarget
+decodeDataTarget target =
+    if target == "user" then
+        UserTarget
+    else if target == "todos" then
+        TodosTarget
+    else
+        WrongTarget
+
+
+type alias DataContainer =
+    { uid : String
+    , target : String
+    , data : Maybe JE.Value
     }
+
+
+databaseFetchUser : String -> Cmd msg
+databaseFetchUser uid =
+    DataContainer uid "user" Nothing
+        |> databaseFetchData
+
+
+databaseFetchTodos : String -> Cmd msg
+databaseFetchTodos uid =
+    DataContainer uid "todos" Nothing
+        |> databaseFetchData
+
+
+databaseSaveUser : String -> User -> Cmd msg
+databaseSaveUser uid user =
+    DataContainer uid "user" (Just (user |> userEncoder))
+        |> databaseSaveData
+
+
+extractDataAndTarget : JD.Value -> Maybe ( DataTarget, JD.Value )
+extractDataAndTarget value =
+    case value |> decodeDataContainer of
+        Err _ ->
+            Nothing
+
+        Ok dataContainer ->
+            Just
+                ( dataContainer.target |> decodeDataTarget
+                , (case dataContainer.data of
+                    Nothing ->
+                        JE.object []
+
+                    Just data ->
+                        data
+                  )
+                )
 
 
 
 -- PORTS
 
 
-type alias OutcomingData =
-    { ref : String
-    , data : JE.Value
-    }
-
-
-port databaseFetchData : String -> Cmd msg
-
-
-port databaseWriteData : OutcomingData -> Cmd msg
+port databaseFetchData : DataContainer -> Cmd msg
 
 
 port databaseReceiveData : (JD.Value -> msg) -> Sub msg
+
+
+port databaseSaveData : DataContainer -> Cmd msg
 
 
 
@@ -90,14 +137,19 @@ port databaseReceiveData : (JD.Value -> msg) -> Sub msg
 
 
 type Msg
-    = ReceiveData Database
+    = ReceiveUser User
 
 
 update : Msg -> Maybe Database -> Maybe Database
-update databaseMsg database =
+update databaseMsg maybeDatabase =
     case databaseMsg of
-        ReceiveData newDatabase ->
-            Just newDatabase
+        ReceiveUser user ->
+            case maybeDatabase of
+                Nothing ->
+                    Just (Database user [])
+
+                Just database ->
+                    Just (database |> setUser user)
 
 
 
@@ -148,13 +200,24 @@ todosDecoder =
     JD.list todoDecoder
 
 
-databaseDecoder : JD.Decoder Database
-databaseDecoder =
-    JD.succeed Database
-        |: (JD.field "user" userDecoder)
-        |: (JD.field "todos" todosDecoder)
+maybeTodosToTodos : Maybe (List Todo) -> JD.Decoder (List Todo)
+maybeTodosToTodos value =
+    case value of
+        Nothing ->
+            JD.succeed []
+
+        Just todos ->
+            JD.succeed todos
 
 
-decodeDatabase : JD.Value -> Result String Database
-decodeDatabase value =
-    JD.decodeValue databaseDecoder value
+dataContainerDecoder : JD.Decoder DataContainer
+dataContainerDecoder =
+    JD.succeed DataContainer
+        |: (JD.field "uid" JD.string)
+        |: (JD.field "target" JD.string)
+        |: (JD.maybe (JD.field "data" JD.value))
+
+
+decodeDataContainer : JD.Value -> Result String DataContainer
+decodeDataContainer value =
+    JD.decodeValue dataContainerDecoder value
