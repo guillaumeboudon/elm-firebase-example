@@ -43,6 +43,7 @@ todoPageView maybeCurrentTodo todos =
                         ]
                         [ text todo.title ]
                     , button [ onClick (SetPage (Pages.TodoPage (Just todo))) ] [ text "Edit" ]
+                    , button [ onClick (DatabaseMsg (Database.DeleteTodo todo.id)) ] [ text "Delete" ]
                     ]
                 )
     in

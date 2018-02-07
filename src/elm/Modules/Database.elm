@@ -110,6 +110,23 @@ saveTodoToTodos todo database =
     { database | todos = database.todos |> saveTodo todo }
 
 
+deleteTodo : Int -> Todos -> Todos
+deleteTodo todoId todos =
+    let
+        selectTodo element list =
+            if element.id == todoId then
+                list
+            else
+                element :: list
+    in
+        { todos | todos = List.foldr selectTodo [] todos.todos }
+
+
+deleteTodoFromTodos : Int -> Database -> Database
+deleteTodoFromTodos todoId database =
+    { database | todos = database.todos |> deleteTodo todoId }
+
+
 
 -- PORTS
 
@@ -132,6 +149,7 @@ type Msg
     | ReceiveTodos Todos
     | SaveUser User
     | SaveTodo Todo
+    | DeleteTodo Int
 
 
 update : Msg -> Maybe Database -> Maybe Database
@@ -168,6 +186,14 @@ update databaseMsg maybeDatabase =
 
                 Just database ->
                     Just (database |> saveTodoToTodos todo)
+
+        DeleteTodo todoId ->
+            case maybeDatabase of
+                Nothing ->
+                    Nothing
+
+                Just database ->
+                    Just (database |> deleteTodoFromTodos todoId)
 
 
 

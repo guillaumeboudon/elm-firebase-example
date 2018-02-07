@@ -111,7 +111,7 @@ databaseUpdate databaseMsg model =
             (Database.update databaseMsg model.database)
     in
         case databaseMsg of
-            Database.ReceiveUser user ->
+            Database.ReceiveUser _ ->
                 ( model |> setDatabase newMaybeDatabase
                 , case model.auth of
                     Auth.Authenticated authUser ->
@@ -121,12 +121,12 @@ databaseUpdate databaseMsg model =
                         Cmd.none
                 )
 
-            Database.ReceiveTodos todos ->
+            Database.ReceiveTodos _ ->
                 ( model |> setDatabase newMaybeDatabase
                 , Cmd.none
                 )
 
-            Database.SaveUser user ->
+            Database.SaveUser _ ->
                 ( model
                     |> setDatabase newMaybeDatabase
                     |> setPage (Pages.TodoPage Nothing)
@@ -144,7 +144,25 @@ databaseUpdate databaseMsg model =
                   )
                 )
 
-            Database.SaveTodo todo ->
+            Database.SaveTodo _ ->
+                ( model
+                    |> setDatabase newMaybeDatabase
+                    |> setPage (Pages.TodoPage Nothing)
+                , (case model.auth of
+                    Auth.NotAuthenticated _ ->
+                        Cmd.none
+
+                    Auth.Authenticated authUser ->
+                        case newMaybeDatabase of
+                            Nothing ->
+                                Cmd.none
+
+                            Just newDatabase ->
+                                Database.databaseSaveTodos authUser.uid newDatabase.todos
+                  )
+                )
+
+            Database.DeleteTodo _ ->
                 ( model
                     |> setDatabase newMaybeDatabase
                     |> setPage (Pages.TodoPage Nothing)
