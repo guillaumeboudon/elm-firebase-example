@@ -75,7 +75,7 @@ authUpdate authMsg model =
             Auth.LoggedIn authUser ->
                 ( model
                     |> setAuth newAuth
-                    |> setPage Pages.WaitingPage
+                    |> setPage (Pages.TodoPage Nothing)
                 , Cmd.batch
                     [ Cmd.map AuthMsg authCmdMsg
                     , Database.databaseFetchUser authUser.uid

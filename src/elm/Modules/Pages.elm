@@ -10,7 +10,7 @@ type Page
     = WaitingPage
     | AuthPage
     | UserCreatePage Database.User
-    | TodoPage
+    | TodoPage (Maybe Database.Todo)
 
 
 

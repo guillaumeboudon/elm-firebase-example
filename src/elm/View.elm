@@ -81,7 +81,7 @@ contentView model =
                 , button [ onClick (PagesMsg Pages.CreateUser) ] [ text "Create user" ]
                 ]
 
-        Pages.TodoPage ->
+        Pages.TodoPage maybeTodo ->
             div [] [ h2 [] [ text "Todo" ] ]
 
 

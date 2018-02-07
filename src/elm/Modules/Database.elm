@@ -21,8 +21,15 @@ type TodoState
 
 
 type alias Todo =
-    { title : String
+    { id : Int
+    , title : String
     , state : TodoState
+    }
+
+
+type alias Todos =
+    { uid : Int
+    , todos : List Todo
     }
 
 
@@ -191,13 +198,21 @@ todoStateDecoder value =
 todoDecoder : JD.Decoder Todo
 todoDecoder =
     JD.succeed Todo
+        |: (JD.field "id" JD.int)
         |: (JD.field "title" JD.string)
         |: (JD.field "states" (JD.andThen todoStateDecoder JD.string))
 
 
-todosDecoder : JD.Decoder (List Todo)
-todosDecoder =
+todoListDecoder : JD.Decoder (List Todo)
+todoListDecoder =
     JD.list todoDecoder
+
+
+todosDecoder : JD.Decoder Todos
+todosDecoder =
+    JD.succeed Todos
+        |: (JD.field "uid" JD.int)
+        |: (JD.field "todos" todoListDecoder)
 
 
 maybeTodosToTodos : Maybe (List Todo) -> JD.Decoder (List Todo)
