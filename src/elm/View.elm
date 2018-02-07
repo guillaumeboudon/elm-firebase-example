@@ -31,7 +31,7 @@ todoPageView maybeCurrentTodo todos =
                 (if currentTodo.id == todo.id then
                     []
                  else
-                    []
+                    [ div [] [ text todo.title ] ]
                 )
     in
         div []
