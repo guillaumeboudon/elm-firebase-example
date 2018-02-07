@@ -3,59 +3,42 @@ module View exposing (view)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra as Maybe
 import Types exposing (..)
 import Modules.Auth as Auth
+import Modules.Database as Database
 import Modules.Pages as Pages
 
 
--- activeBodyView : Auth.AuthUser -> Model -> Html Msg
--- activeBodyView authUser model =
---     case model.database of
---         Nothing ->
---             div []
---                 [ h1 [] [ text "Create user" ]
---                 , input [ type_ "text", onInput (AuthMsg << Auth.InputEmail) ] []
---                 , input [ type_ "text", onInput (AuthMsg << Auth.InputEmail) ] []
---                 ]
---
---         Just database ->
---             div []
---                 [ h1 [] [ text "Authenticated" ]
---                 , button [ onClick (AuthMsg Auth.LogOut) ] [ text "Logout" ]
---                 , p [] [ text "Data fetched" ]
---                 ]
---
---
--- bodyView : Auth.AuthUser -> Model -> Html Msg
--- bodyView authUser model =
---     case model.status of
---         Loading ->
---             div [] [ text "..." ]
---
---         Active ->
---             activeBodyView authUser model
---
---
--- preventNotAuthAccess model =
---     case model.auth of
---         Auth.NotAuthenticated _ ->
---             model |> setRoute AuthPage
---
---         _ ->
---             model
---
---
--- validatedView model =
---     case model.page of
---
---         Auth.NotAuthenticated _ ->
---
---
---         Auth.Authenticated authUser ->
---             div []
---                 [ headerView
---                 , bodyView authUser model
---                 ]
+todoPageView : Maybe Database.Todo -> Database.Todos -> Html Msg
+todoPageView maybeCurrentTodo todos =
+    let
+        currentTodo =
+            maybeCurrentTodo |> Maybe.withDefault (Database.newTodo -1)
+
+        newTodoPartial =
+            div []
+                (if currentTodo.id == todos.uid then
+                    [ input [ onInput (SetPage << Pages.TodoPage << Just << (Database.setTodoTitle currentTodo)) ] []
+                    , button [ onClick (DatabaseMsg (Database.SaveTodo currentTodo)) ] [ text "Save" ]
+                    ]
+                 else
+                    [ input [ onClick (SetPage (Pages.TodoPage (Just (Database.newTodo todos.uid)))), placeholder "Add a task...", value "" ] [] ]
+                )
+
+        todoPartial todo =
+            div []
+                (if currentTodo.id == todo.id then
+                    []
+                 else
+                    []
+                )
+    in
+        div []
+            [ h2 [] [ text "Todo" ]
+            , newTodoPartial
+            , div [] (todos.todos |> List.map todoPartial)
+            ]
 
 
 contentView : Model -> Html Msg
@@ -78,11 +61,11 @@ contentView model =
                 [ h2 [] [ text "User" ]
                 , input [ type_ "text", onInput (PagesMsg << Pages.InputUserFirstName), placeholder "Prénom" ] []
                 , input [ type_ "text", onInput (PagesMsg << Pages.InputUserLastName), placeholder "Nom" ] []
-                , button [ onClick (PagesMsg Pages.CreateUser) ] [ text "Create user" ]
+                , button [ onClick (DatabaseMsg (Database.SaveUser user)) ] [ text "Create user" ]
                 ]
 
-        Pages.TodoPage maybeTodo ->
-            div [] [ h2 [] [ text "Todo" ] ]
+        Pages.TodoPage maybeCurrentTodo ->
+            todoPageView maybeCurrentTodo (model.database |> Maybe.unwrap Database.emptyTodos .todos)
 
 
 headerView : Model -> Html Msg
@@ -119,5 +102,5 @@ view model =
             ]
         ]
         [ headerView model
-        , contentView model
+        , div [ style [ ( "margin", "20px 50px" ) ] ] [ contentView model ]
         ]

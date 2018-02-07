@@ -104,10 +104,49 @@ databaseUpdate databaseMsg model =
     in
         case databaseMsg of
             Database.ReceiveUser user ->
+                ( model |> setDatabase newMaybeDatabase
+                , case model.auth of
+                    Auth.Authenticated authUser ->
+                        Database.databaseFetchTodos authUser.uid
+
+                    _ ->
+                        Cmd.none
+                )
+
+            Database.SaveUser user ->
                 ( model
                     |> setDatabase newMaybeDatabase
-                    |> setPage Pages.WaitingPage
-                , Cmd.none
+                    |> setPage (Pages.TodoPage Nothing)
+                , (case model.auth of
+                    Auth.NotAuthenticated _ ->
+                        Cmd.none
+
+                    Auth.Authenticated authUser ->
+                        case newMaybeDatabase of
+                            Nothing ->
+                                Cmd.none
+
+                            Just newDatabase ->
+                                Database.databaseSaveUser authUser.uid newDatabase.user
+                  )
+                )
+
+            Database.SaveTodo todo ->
+                ( model
+                    |> setDatabase newMaybeDatabase
+                    |> setPage (Pages.TodoPage Nothing)
+                , (case model.auth of
+                    Auth.NotAuthenticated _ ->
+                        Cmd.none
+
+                    Auth.Authenticated authUser ->
+                        case newMaybeDatabase of
+                            Nothing ->
+                                Cmd.none
+
+                            Just newDatabase ->
+                                Database.databaseSaveTodos authUser.uid newDatabase.todos
+                  )
                 )
 
 
@@ -116,27 +155,9 @@ pagesUpdate pagesMsg model =
     let
         newPage =
             Pages.update pagesMsg model.page
-
-        cmdMsg =
-            case model.page of
-                Pages.UserCreatePage user ->
-                    case pagesMsg of
-                        Pages.CreateUser ->
-                            case model.auth of
-                                Auth.NotAuthenticated _ ->
-                                    Cmd.none
-
-                                Auth.Authenticated authUser ->
-                                    user |> Database.databaseSaveUser authUser.uid
-
-                        _ ->
-                            Cmd.none
-
-                _ ->
-                    Cmd.none
     in
         ( model |> setPage newPage
-        , cmdMsg
+        , Cmd.none
         )
 
 

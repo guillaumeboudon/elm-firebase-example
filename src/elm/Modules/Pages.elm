@@ -30,9 +30,6 @@ update pagesMsg page =
                     { user | lastName = lastName }
                         |> UserCreatePage
 
-                _ ->
-                    page
-
         _ ->
             page
 
@@ -44,4 +41,3 @@ update pagesMsg page =
 type Msg
     = InputUserFirstName String
     | InputUserLastName String
-    | CreateUser

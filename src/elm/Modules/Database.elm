@@ -15,6 +15,16 @@ type alias User =
     }
 
 
+encodeTodoState : TodoState -> String
+encodeTodoState todoState =
+    case todoState of
+        Pending ->
+            "pending"
+
+        Done ->
+            "done"
+
+
 type TodoState
     = Pending
     | Done
@@ -35,7 +45,7 @@ type alias Todos =
 
 type alias Database =
     { user : User
-    , todos : List Todo
+    , todos : Todos
     }
 
 
@@ -46,6 +56,16 @@ type alias Database =
 emptyUser : User
 emptyUser =
     User "" ""
+
+
+emptyTodos : Todos
+emptyTodos =
+    Todos 0 []
+
+
+newTodo : Int -> Todo
+newTodo id =
+    Todo id "" Pending
 
 
 
@@ -60,6 +80,24 @@ setUser user database =
 setTodos : List Todo -> { a | todos : List Todo } -> { a | todos : List Todo }
 setTodos todos database =
     { database | todos = todos }
+
+
+setTodoTitle : Todo -> String -> Todo
+setTodoTitle todo title =
+    { todo | title = title }
+
+
+addTodo : Todo -> Todos -> Todos
+addTodo todo todos =
+    { todos
+        | uid = todo.id + 1
+        , todos = todos.todos ++ [ todo ]
+    }
+
+
+addTodoToTodos : Todo -> Database -> Database
+addTodoToTodos todo database =
+    { database | todos = database.todos |> addTodo todo }
 
 
 
@@ -81,6 +119,8 @@ port databaseSaveData : DataContainer -> Cmd msg
 
 type Msg
     = ReceiveUser User
+    | SaveUser User
+    | SaveTodo Todo
 
 
 update : Msg -> Maybe Database -> Maybe Database
@@ -89,10 +129,26 @@ update databaseMsg maybeDatabase =
         ReceiveUser user ->
             case maybeDatabase of
                 Nothing ->
-                    Just (Database user [])
+                    Just (Database user emptyTodos)
 
                 Just database ->
                     Just (database |> setUser user)
+
+        SaveUser user ->
+            case maybeDatabase of
+                Nothing ->
+                    Nothing
+
+                Just database ->
+                    Just (database |> setUser user)
+
+        SaveTodo todo ->
+            case maybeDatabase of
+                Nothing ->
+                    Nothing
+
+                Just database ->
+                    Just (database |> addTodoToTodos todo)
 
 
 
@@ -134,6 +190,12 @@ databaseFetchTodos uid =
         |> databaseFetchData
 
 
+databaseSaveTodos : String -> Todos -> Cmd msg
+databaseSaveTodos uid todos =
+    DataContainer uid "todos" (Just (todos |> todosEncoder))
+        |> databaseSaveData
+
+
 databaseSaveUser : String -> User -> Cmd msg
 databaseSaveUser uid user =
     DataContainer uid "user" (Just (user |> userEncoder))
@@ -168,6 +230,23 @@ userEncoder user =
     JE.object
         [ ( "firstName", JE.string user.firstName )
         , ( "lastName", JE.string user.lastName )
+        ]
+
+
+todoEncoder : Todo -> JE.Value
+todoEncoder todo =
+    JE.object
+        [ ( "id", JE.int todo.id )
+        , ( "title", JE.string todo.title )
+        , ( "state", JE.string (todo.state |> encodeTodoState) )
+        ]
+
+
+todosEncoder : Todos -> JE.Value
+todosEncoder todos =
+    JE.object
+        [ ( "uid", JE.int todos.uid )
+        , ( "todos", JE.list (List.map todoEncoder todos.todos) )
         ]
 
 
