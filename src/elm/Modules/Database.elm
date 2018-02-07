@@ -119,12 +119,38 @@ deleteTodo todoId todos =
             else
                 element :: list
     in
-        { todos | todos = List.foldr selectTodo [] todos.todos }
+        { todos | todos = todos.todos |> List.foldr selectTodo [] }
 
 
 deleteTodoFromTodos : Int -> Database -> Database
 deleteTodoFromTodos todoId database =
     { database | todos = database.todos |> deleteTodo todoId }
+
+
+toggleTodo : Int -> Todos -> Todos
+toggleTodo todoId todos =
+    let
+        toggler element =
+            if element.id == todoId then
+                { element
+                    | state =
+                        (case element.state of
+                            Pending ->
+                                Done
+
+                            Done ->
+                                Pending
+                        )
+                }
+            else
+                element
+    in
+        { todos | todos = todos.todos |> List.map toggler }
+
+
+toggleTodoFromTodos : Int -> Database -> Database
+toggleTodoFromTodos todoId database =
+    { database | todos = database.todos |> toggleTodo todoId }
 
 
 
@@ -150,6 +176,7 @@ type Msg
     | SaveUser User
     | SaveTodo Todo
     | DeleteTodo Int
+    | ToggleTodoState Int
 
 
 update : Msg -> Maybe Database -> Maybe Database
@@ -174,7 +201,7 @@ update databaseMsg maybeDatabase =
         SaveUser user ->
             case maybeDatabase of
                 Nothing ->
-                    Nothing
+                    Just (Database user emptyTodos)
 
                 Just database ->
                     Just (database |> setUser user)
@@ -194,6 +221,14 @@ update databaseMsg maybeDatabase =
 
                 Just database ->
                     Just (database |> deleteTodoFromTodos todoId)
+
+        ToggleTodoState todoId ->
+            case maybeDatabase of
+                Nothing ->
+                    Nothing
+
+                Just database ->
+                    Just (database |> toggleTodoFromTodos todoId)
 
 
 

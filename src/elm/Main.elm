@@ -180,6 +180,24 @@ databaseUpdate databaseMsg model =
                   )
                 )
 
+            Database.ToggleTodoState _ ->
+                ( model
+                    |> setDatabase newMaybeDatabase
+                    |> setPage (Pages.TodoPage Nothing)
+                , (case model.auth of
+                    Auth.NotAuthenticated _ ->
+                        Cmd.none
+
+                    Auth.Authenticated authUser ->
+                        case newMaybeDatabase of
+                            Nothing ->
+                                Cmd.none
+
+                            Just newDatabase ->
+                                Database.databaseSaveTodos authUser.uid newDatabase.todos
+                  )
+                )
+
 
 pagesUpdate : Pages.Msg -> Model -> ( Model, Cmd Msg )
 pagesUpdate pagesMsg model =

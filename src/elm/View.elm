@@ -39,10 +39,23 @@ todoPageView maybeCurrentTodo todos =
                             , ( "overflow", "hidden" )
                             , ( "white-space", "nowrap" )
                             , ( "text-overflow", "ellipsis" )
+                            , (if todo.state == Database.Pending then
+                                ( "color", "black" )
+                               else
+                                ( "color", "#DDD" )
+                              )
                             ]
                         ]
                         [ text todo.title ]
                     , button [ onClick (SetPage (Pages.TodoPage (Just todo))) ] [ text "Edit" ]
+                    , button [ onClick (DatabaseMsg (Database.ToggleTodoState todo.id)) ]
+                        (case todo.state of
+                            Database.Pending ->
+                                [ text "Close" ]
+
+                            Database.Done ->
+                                [ text "Reopen" ]
+                        )
                     , button [ onClick (DatabaseMsg (Database.DeleteTodo todo.id)) ] [ text "Delete" ]
                     ]
                 )

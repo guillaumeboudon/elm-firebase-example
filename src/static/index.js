@@ -60,5 +60,7 @@ app.ports.databaseFetchData.subscribe(function(container) {
 })
 
 app.ports.databaseSaveData.subscribe(function(container){
+  console.log("container:")
+  console.log(container)
   database.ref(container.uid + "/" + container.target).set(container.data)
 })
