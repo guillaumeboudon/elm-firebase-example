@@ -11,7 +11,6 @@ type Page
     | AuthPage
     | UserCreatePage Database.User
     | TodoPage
-    | TextPage String
 
 
 

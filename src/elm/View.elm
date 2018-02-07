@@ -84,9 +84,6 @@ contentView model =
         Pages.TodoPage ->
             div [] [ h2 [] [ text "Todo" ] ]
 
-        Pages.TextPage message ->
-            div [] [ p [] [ text message ] ]
-
 
 headerView : Model -> Html Msg
 headerView model =
