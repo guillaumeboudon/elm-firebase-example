@@ -68,6 +68,11 @@ newTodo id =
     Todo id "" Pending
 
 
+emptyDatabase : Database
+emptyDatabase =
+    Database emptyUser emptyTodos
+
+
 
 {- Setters -}
 
@@ -179,56 +184,26 @@ type Msg
     | ToggleTodoState Int
 
 
-update : Msg -> Maybe Database -> Maybe Database
-update databaseMsg maybeDatabase =
+update : Msg -> Database -> Database
+update databaseMsg database =
     case databaseMsg of
         ReceiveUser user ->
-            case maybeDatabase of
-                Nothing ->
-                    Just (Database user emptyTodos)
-
-                Just database ->
-                    Just (database |> setUser user)
+            database |> setUser user
 
         ReceiveTodos todos ->
-            case maybeDatabase of
-                Nothing ->
-                    Nothing
-
-                Just database ->
-                    Just (database |> setTodos todos)
+            database |> setTodos todos
 
         SaveUser user ->
-            case maybeDatabase of
-                Nothing ->
-                    Just (Database user emptyTodos)
-
-                Just database ->
-                    Just (database |> setUser user)
+            database |> setUser user
 
         SaveTodo todo ->
-            case maybeDatabase of
-                Nothing ->
-                    Nothing
-
-                Just database ->
-                    Just (database |> saveTodoToTodos todo)
+            database |> saveTodoToTodos todo
 
         DeleteTodo todoId ->
-            case maybeDatabase of
-                Nothing ->
-                    Nothing
-
-                Just database ->
-                    Just (database |> deleteTodoFromTodos todoId)
+            database |> deleteTodoFromTodos todoId
 
         ToggleTodoState todoId ->
-            case maybeDatabase of
-                Nothing ->
-                    Nothing
-
-                Just database ->
-                    Just (database |> toggleTodoFromTodos todoId)
+            database |> toggleTodoFromTodos todoId
 
 
 

@@ -107,96 +107,60 @@ authUpdate authMsg model =
 databaseUpdate : Database.Msg -> Model -> ( Model, Cmd Msg )
 databaseUpdate databaseMsg model =
     let
-        newMaybeDatabase =
-            (Database.update databaseMsg model.database)
+        database =
+            case model.database of
+                Nothing ->
+                    Database.emptyDatabase
+
+                Just database ->
+                    database
+
+        newDatabase =
+            (Database.update databaseMsg database)
     in
-        case databaseMsg of
-            Database.ReceiveUser _ ->
-                ( model |> setDatabase newMaybeDatabase
-                , case model.auth of
-                    Auth.Authenticated authUser ->
-                        Database.databaseFetchTodos authUser.uid
+        case model.auth of
+            Auth.NotAuthenticated _ ->
+                model ! []
 
-                    _ ->
-                        Cmd.none
-                )
+            Auth.Authenticated authUser ->
+                case databaseMsg of
+                    Database.ReceiveUser _ ->
+                        ( model |> setDatabase (Just newDatabase)
+                        , Database.databaseFetchTodos authUser.uid
+                        )
 
-            Database.ReceiveTodos _ ->
-                ( model |> setDatabase newMaybeDatabase
-                , Cmd.none
-                )
+                    Database.ReceiveTodos _ ->
+                        ( model |> setDatabase (Just newDatabase)
+                        , Cmd.none
+                        )
 
-            Database.SaveUser _ ->
-                ( model
-                    |> setDatabase newMaybeDatabase
-                    |> setPage (Pages.TodoPage Nothing)
-                , (case model.auth of
-                    Auth.NotAuthenticated _ ->
-                        Cmd.none
+                    Database.SaveUser _ ->
+                        ( model
+                            |> setDatabase (Just newDatabase)
+                            |> setPage (Pages.TodoPage Nothing)
+                        , Database.databaseSaveUser authUser.uid newDatabase.user
+                        )
 
-                    Auth.Authenticated authUser ->
-                        case newMaybeDatabase of
-                            Nothing ->
-                                Cmd.none
+                    Database.SaveTodo _ ->
+                        ( model
+                            |> setDatabase (Just newDatabase)
+                            |> setPage (Pages.TodoPage Nothing)
+                        , Database.databaseSaveTodos authUser.uid newDatabase.todos
+                        )
 
-                            Just newDatabase ->
-                                Database.databaseSaveUser authUser.uid newDatabase.user
-                  )
-                )
+                    Database.DeleteTodo _ ->
+                        ( model
+                            |> setDatabase (Just newDatabase)
+                            |> setPage (Pages.TodoPage Nothing)
+                        , Database.databaseSaveTodos authUser.uid newDatabase.todos
+                        )
 
-            Database.SaveTodo _ ->
-                ( model
-                    |> setDatabase newMaybeDatabase
-                    |> setPage (Pages.TodoPage Nothing)
-                , (case model.auth of
-                    Auth.NotAuthenticated _ ->
-                        Cmd.none
-
-                    Auth.Authenticated authUser ->
-                        case newMaybeDatabase of
-                            Nothing ->
-                                Cmd.none
-
-                            Just newDatabase ->
-                                Database.databaseSaveTodos authUser.uid newDatabase.todos
-                  )
-                )
-
-            Database.DeleteTodo _ ->
-                ( model
-                    |> setDatabase newMaybeDatabase
-                    |> setPage (Pages.TodoPage Nothing)
-                , (case model.auth of
-                    Auth.NotAuthenticated _ ->
-                        Cmd.none
-
-                    Auth.Authenticated authUser ->
-                        case newMaybeDatabase of
-                            Nothing ->
-                                Cmd.none
-
-                            Just newDatabase ->
-                                Database.databaseSaveTodos authUser.uid newDatabase.todos
-                  )
-                )
-
-            Database.ToggleTodoState _ ->
-                ( model
-                    |> setDatabase newMaybeDatabase
-                    |> setPage (Pages.TodoPage Nothing)
-                , (case model.auth of
-                    Auth.NotAuthenticated _ ->
-                        Cmd.none
-
-                    Auth.Authenticated authUser ->
-                        case newMaybeDatabase of
-                            Nothing ->
-                                Cmd.none
-
-                            Just newDatabase ->
-                                Database.databaseSaveTodos authUser.uid newDatabase.todos
-                  )
-                )
+                    Database.ToggleTodoState _ ->
+                        ( model
+                            |> setDatabase (Just newDatabase)
+                            |> setPage (Pages.TodoPage Nothing)
+                        , Database.databaseSaveTodos authUser.uid newDatabase.todos
+                        )
 
 
 pagesUpdate : Pages.Msg -> Model -> ( Model, Cmd Msg )
