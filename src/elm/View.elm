@@ -19,7 +19,7 @@ todoPageView maybeCurrentTodo todos =
         newTodoPartial =
             div []
                 (if currentTodo.id == todos.uid then
-                    [ input [ onInput (PagesMsg << Pages.SetPage << Pages.TodoPage << Just << (Database.setTodoTitle currentTodo)) ] []
+                    [ input [ onInput (PagesMsg << Pages.InputTodo) ] []
                     , button [ onClick (DatabaseMsg (Database.SaveTodo currentTodo)) ] [ text "Save" ]
                     ]
                  else
@@ -29,7 +29,7 @@ todoPageView maybeCurrentTodo todos =
         todoPartial todo =
             div [ style [ ( "display", "flex" ), ( "flex-direction", "row" ) ] ]
                 (if currentTodo.id == todo.id then
-                    [ input [ onInput (PagesMsg << Pages.SetPage << Pages.TodoPage << Just << (Database.setTodoTitle currentTodo)), value currentTodo.title ] []
+                    [ input [ onInput (PagesMsg << Pages.InputTodo), value currentTodo.title ] []
                     , button [ onClick (DatabaseMsg (Database.SaveTodo currentTodo)) ] [ text "Save" ]
                     ]
                  else

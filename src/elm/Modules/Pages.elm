@@ -41,6 +41,21 @@ update pagesMsg currentPage =
                 _ ->
                     currentPage
 
+        InputTodo title ->
+            case currentPage of
+                TodoPage maybeTodo ->
+                    case maybeTodo of
+                        Nothing ->
+                            currentPage
+
+                        Just todo ->
+                            { todo | title = title }
+                                |> Just
+                                |> TodoPage
+
+                _ ->
+                    currentPage
+
 
 
 -- MSG
@@ -50,3 +65,4 @@ type Msg
     = SetPage Page
     | InputUserFirstName String
     | InputUserLastName String
+    | InputTodo String

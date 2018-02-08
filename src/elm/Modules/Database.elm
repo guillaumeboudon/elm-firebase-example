@@ -87,11 +87,6 @@ setTodos todos database =
     { database | todos = todos }
 
 
-setTodoTitle : Todo -> String -> Todo
-setTodoTitle todo title =
-    { todo | title = title }
-
-
 saveTodo : Todo -> Todos -> Todos
 saveTodo todo todos =
     let
