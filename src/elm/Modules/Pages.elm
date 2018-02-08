@@ -18,20 +18,28 @@ type Page
 
 
 update : Msg -> Page -> Page
-update pagesMsg page =
-    case page of
-        UserPage user ->
-            case pagesMsg of
-                InputUserFirstName firstName ->
+update pagesMsg currentPage =
+    case pagesMsg of
+        SetPage page ->
+            page
+
+        InputUserFirstName firstName ->
+            case currentPage of
+                UserPage user ->
                     { user | firstName = firstName }
                         |> UserPage
 
-                InputUserLastName lastName ->
+                _ ->
+                    currentPage
+
+        InputUserLastName lastName ->
+            case currentPage of
+                UserPage user ->
                     { user | lastName = lastName }
                         |> UserPage
 
-        _ ->
-            page
+                _ ->
+                    currentPage
 
 
 
@@ -39,5 +47,6 @@ update pagesMsg page =
 
 
 type Msg
-    = InputUserFirstName String
+    = SetPage Page
+    | InputUserFirstName String
     | InputUserLastName String

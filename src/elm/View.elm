@@ -19,17 +19,17 @@ todoPageView maybeCurrentTodo todos =
         newTodoPartial =
             div []
                 (if currentTodo.id == todos.uid then
-                    [ input [ onInput (SetPage << Pages.TodoPage << Just << (Database.setTodoTitle currentTodo)) ] []
+                    [ input [ onInput (PagesMsg << Pages.SetPage << Pages.TodoPage << Just << (Database.setTodoTitle currentTodo)) ] []
                     , button [ onClick (DatabaseMsg (Database.SaveTodo currentTodo)) ] [ text "Save" ]
                     ]
                  else
-                    [ input [ onClick (SetPage (Pages.TodoPage (Just (Database.newTodo todos.uid)))), placeholder "Add a task...", value "" ] [] ]
+                    [ input [ onClick (PagesMsg <| Pages.SetPage (Pages.TodoPage (Just (Database.newTodo todos.uid)))), placeholder "Add a task...", value "" ] [] ]
                 )
 
         todoPartial todo =
             div [ style [ ( "display", "flex" ), ( "flex-direction", "row" ) ] ]
                 (if currentTodo.id == todo.id then
-                    [ input [ onInput (SetPage << Pages.TodoPage << Just << (Database.setTodoTitle currentTodo)), value currentTodo.title ] []
+                    [ input [ onInput (PagesMsg << Pages.SetPage << Pages.TodoPage << Just << (Database.setTodoTitle currentTodo)), value currentTodo.title ] []
                     , button [ onClick (DatabaseMsg (Database.SaveTodo currentTodo)) ] [ text "Save" ]
                     ]
                  else
@@ -47,7 +47,7 @@ todoPageView maybeCurrentTodo todos =
                             ]
                         ]
                         [ text todo.title ]
-                    , button [ onClick (SetPage (Pages.TodoPage (Just todo))) ] [ text "Edit" ]
+                    , button [ onClick (PagesMsg <| Pages.SetPage (Pages.TodoPage (Just todo))) ] [ text "Edit" ]
                     , button [ onClick (DatabaseMsg (Database.ToggleTodoState todo.id)) ]
                         (case todo.state of
                             Database.Pending ->
@@ -89,9 +89,9 @@ contentView model =
         Pages.UserPage user ->
             div []
                 [ h2 [] [ text "User" ]
-                , input [ type_ "text", onInput (PagesMsg << Pages.InputUserFirstName), placeholder "Prénom" ] []
-                , input [ type_ "text", onInput (PagesMsg << Pages.InputUserLastName), placeholder "Nom" ] []
-                , button [ onClick (DatabaseMsg (Database.SaveUser user)) ] [ text "Create user" ]
+                , input [ type_ "text", onInput (PagesMsg << Pages.InputUserFirstName), placeholder "Frist name", value user.firstName ] []
+                , input [ type_ "text", onInput (PagesMsg << Pages.InputUserLastName), placeholder "Last name", value user.lastName ] []
+                , button [ onClick (DatabaseMsg (Database.SaveUser user)) ] [ text "Save user" ]
                 ]
 
         Pages.TodoPage maybeCurrentTodo ->
@@ -100,27 +100,42 @@ contentView model =
 
 headerView : Model -> Html Msg
 headerView model =
-    div
-        [ style
-            [ ( "background-color", "#AAA" )
-            , ( "display", "flex" )
-            , ( "flex-direction", "row" )
-            ]
-        ]
-        (case model.auth of
-            Auth.NotAuthenticated _ ->
-                [ div
-                    [ style [ ( "flex", "1" ) ] ]
-                    [ h1 [] [ text "Not authenticated" ] ]
-                ]
+    let
+        updateUserButton =
+            case model.database of
+                Nothing ->
+                    []
 
-            Auth.Authenticated _ ->
-                [ div [ style [ ( "flex", "1" ) ] ]
-                    [ h1 [] [ text "Authenticated" ] ]
-                , div []
-                    [ button [ onClick (AuthMsg Auth.LogOut) ] [ text "Logout" ] ]
+                Just database ->
+                    case model.page of
+                        Pages.TodoPage _ ->
+                            [ div [] [ button [ onClick (PagesMsg (Pages.SetPage (Pages.UserPage database.user))) ] [ text "Update user" ] ] ]
+
+                        _ ->
+                            []
+    in
+        div
+            [ style
+                [ ( "background-color", "#AAA" )
+                , ( "display", "flex" )
+                , ( "flex-direction", "row" )
                 ]
-        )
+            ]
+            (case model.auth of
+                Auth.NotAuthenticated _ ->
+                    [ div
+                        [ style [ ( "flex", "1" ) ] ]
+                        [ h1 [] [ text "Not authenticated" ] ]
+                    ]
+
+                Auth.Authenticated _ ->
+                    [ div [ style [ ( "flex", "1" ) ] ]
+                        [ h1 [] [ text "Authenticated" ] ]
+                    , div []
+                        [ button [ onClick (AuthMsg Auth.LogOut) ] [ text "Logout" ] ]
+                    ]
+                        ++ updateUserButton
+            )
 
 
 view : Model -> Html.Html Msg

@@ -55,5 +55,4 @@ type Msg
     = NoOp
     | AuthMsg Auth.Msg
     | DatabaseMsg Database.Msg
-    | SetPage Pages.Page
     | PagesMsg Pages.Msg

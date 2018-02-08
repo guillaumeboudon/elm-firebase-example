@@ -36,14 +36,14 @@ decodeDatabaseReceiveData : JD.Value -> Msg
 decodeDatabaseReceiveData value =
     case value |> Database.extractDataAndTarget of
         Nothing ->
-            SetPage (Pages.UserCreatePage Database.emptyUser)
+            PagesMsg <| Pages.SetPage (Pages.UserPage Database.emptyUser)
 
         Just ( dataTarget, data ) ->
             case dataTarget of
                 Database.UserTarget ->
                     case data |> JD.decodeValue Database.userDecoder of
                         Err _ ->
-                            SetPage (Pages.UserCreatePage Database.emptyUser)
+                            PagesMsg <| Pages.SetPage (Pages.UserPage Database.emptyUser)
 
                         Ok user ->
                             DatabaseMsg (Database.ReceiveUser user)
@@ -51,7 +51,7 @@ decodeDatabaseReceiveData value =
                 Database.TodosTarget ->
                     case data |> JD.decodeValue Database.todosDecoder of
                         Err _ ->
-                            SetPage (Pages.TodoPage Nothing)
+                            PagesMsg <| Pages.SetPage (Pages.TodoPage Nothing)
 
                         Ok todos ->
                             DatabaseMsg (Database.ReceiveTodos todos)
@@ -181,11 +181,6 @@ update msg model =
 
         DatabaseMsg databaseMsg ->
             model |> databaseUpdate databaseMsg
-
-        SetPage page ->
-            ( model |> setPage page
-            , Cmd.none
-            )
 
         PagesMsg pagesMsg ->
             model |> pagesUpdate pagesMsg
