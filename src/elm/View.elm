@@ -86,7 +86,7 @@ contentView model =
                 , button [ onClick (AuthMsg Auth.LogIn) ] [ text "Login" ]
                 ]
 
-        Pages.UserCreatePage user ->
+        Pages.UserPage user ->
             div []
                 [ h2 [] [ text "User" ]
                 , input [ type_ "text", onInput (PagesMsg << Pages.InputUserFirstName), placeholder "Prénom" ] []

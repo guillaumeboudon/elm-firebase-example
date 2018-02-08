@@ -116,7 +116,7 @@ databaseUpdate databaseMsg model =
                     database
 
         newDatabase =
-            (Database.update databaseMsg database)
+            Database.update databaseMsg database
     in
         case model.auth of
             Auth.NotAuthenticated _ ->
@@ -165,13 +165,9 @@ databaseUpdate databaseMsg model =
 
 pagesUpdate : Pages.Msg -> Model -> ( Model, Cmd Msg )
 pagesUpdate pagesMsg model =
-    let
-        newPage =
-            Pages.update pagesMsg model.page
-    in
-        ( model |> setPage newPage
-        , Cmd.none
-        )
+    ( model |> setPage (Pages.update pagesMsg model.page)
+    , Cmd.none
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

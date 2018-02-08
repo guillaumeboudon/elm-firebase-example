@@ -9,7 +9,7 @@ import Modules.Database as Database
 type Page
     = WaitingPage
     | AuthPage
-    | UserCreatePage Database.User
+    | UserPage Database.User
     | TodoPage (Maybe Database.Todo)
 
 
@@ -20,15 +20,15 @@ type Page
 update : Msg -> Page -> Page
 update pagesMsg page =
     case page of
-        UserCreatePage user ->
+        UserPage user ->
             case pagesMsg of
                 InputUserFirstName firstName ->
                     { user | firstName = firstName }
-                        |> UserCreatePage
+                        |> UserPage
 
                 InputUserLastName lastName ->
                     { user | lastName = lastName }
-                        |> UserCreatePage
+                        |> UserPage
 
         _ ->
             page
